@@ -150,12 +150,17 @@
             left: 100% !important;
         }
 
-        .key-area.active.white-key {
-            background: rgba(0, 0, 0, 0.2) !important;
-        }
-
+        .key-area.active.white-key,
         .key-area.active.black-key {
             background: rgba(0, 0, 0, 0.2) !important;
+            -webkit-mask-image: 
+                linear-gradient(to bottom, transparent 0%, black 50%),
+                linear-gradient(to right, transparent 0%, black 15%, black 85%, transparent 100%);
+            -webkit-mask-composite: source-in;
+            mask-image: 
+                linear-gradient(to bottom, transparent 0%, black 50%),
+                linear-gradient(to right, transparent 0%, black 15%, black 85%, transparent 100%);
+            mask-composite: intersect;
         }
 
         .loading {
@@ -589,6 +594,15 @@
             let isMouseDown = false;
             let lastMouseKey = null;
 
+            // 마우스 상태 초기화 함수
+            function resetMouseState() {
+                if (lastMouseKey) {
+                    deactivateKey(lastMouseKey);
+                    lastMouseKey = null;
+                }
+                isMouseDown = false;
+            }
+
             document.addEventListener('mousedown', (e) => {
                 if (e.button !== 0) return; // 좌클릭만 허용
                 isMouseDown = true;
@@ -615,11 +629,29 @@
             });
 
             document.addEventListener('mouseup', () => {
-                isMouseDown = false;
-                if (lastMouseKey) {
-                    deactivateKey(lastMouseKey);
-                    lastMouseKey = null;
-                }
+                resetMouseState();
+            });
+
+            // 창 밖에서 마우스를 놓거나 포커스를 잃을 때 상태 초기화
+            window.addEventListener('mouseup', () => {
+                resetMouseState();
+            });
+
+            window.addEventListener('blur', () => {
+                resetMouseState();
+            });
+
+            document.addEventListener('mouseleave', () => {
+                resetMouseState();
+            });
+
+            // 전체화면 변경 시 상태 초기화
+            document.addEventListener('fullscreenchange', () => {
+                resetMouseState();
+            });
+
+            document.addEventListener('webkitfullscreenchange', () => {
+                resetMouseState();
             });
 
             // 마우스 우클릭 금지
